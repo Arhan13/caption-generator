@@ -1,5 +1,3 @@
-import os
-
 import streamlit as st
 from dotenv import load_dotenv
 from PIL import Image
@@ -9,7 +7,7 @@ from transformers import BlipProcessor, BlipForConditionalGeneration
 load_dotenv()
 
 
-OPENAPI_KEY = st.secrets["OPENAPI_KEY"]
+OPENAPI_KEY_VALUE = st.secrets.OPENAPI_KEY
 
 processor = BlipProcessor.from_pretrained(
     "Salesforce/blip-image-captioning-large")
@@ -17,7 +15,7 @@ model = BlipForConditionalGeneration.from_pretrained(
     "Salesforce/blip-image-captioning-large")
 
 
-client = OpenAI(api_key=OPENAPI_KEY)
+client = OpenAI(api_key=OPENAPI_KEY_VALUE)
 
 # File upload handling
 uploaded_file = st.file_uploader(
