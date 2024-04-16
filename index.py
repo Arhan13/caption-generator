@@ -8,13 +8,8 @@ from transformers import BlipProcessor, BlipForConditionalGeneration
 
 load_dotenv()
 
-# And the root-level secrets are also accessible as environment variables:
-st.write(
-    "Has environment variables been set:",
-    os.environ["OPENAPI_KEY"] == st.secrets["OPENAPI_KEY"],
-)
 
-OPENAPI_KEY = os.getenv("OPENAPI_KEY")
+OPENAPI_KEY = st.secrets["OPENAPI_KEY"]
 
 processor = BlipProcessor.from_pretrained(
     "Salesforce/blip-image-captioning-large")
