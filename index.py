@@ -1,6 +1,8 @@
 import streamlit as st
 from dotenv import load_dotenv
 from PIL import Image
+import base64
+from io import BytesIO
 from openai import OpenAI
 from transformers import BlipProcessor, BlipForConditionalGeneration
 
@@ -69,6 +71,60 @@ def generate_social_media_post(image_conditional_caption, image_unconditional_ca
     return response.choices[0].message.content
 
 
+def image_to_base64(image):
+    buffered = BytesIO()
+    image.save(buffered, format="JPEG")
+    return base64.b64encode(buffered.getvalue()).decode('utf-8')
+
+
+def evaluate_social_media_post(image, caption, company_information):
+    base64_image = image_to_base64(image)
+    prompt = f"""
+    Given an image and its caption, evaluate the caption's effectiveness based on the following criteria:
+
+    1. **Engagement Potential**: Consider factors such as the caption's ability to capture attention, provoke thought, or encourage interaction (likes, comments, shares). Assess whether the caption uses language that is likely to engage the target audience, including any use of humor, questions, or call-to-actions.
+
+    2. **Alignment with Company Values**: Examine if the caption accurately reflects the company's values and branding. The company is committed to [describe company values briefly, e.g., sustainability, innovation, customer focus]. Determine if the caption supports these values, either directly through the content or indirectly through tone and approach.
+
+    3. **Rating for the post**: Finally rate the post on a scale of 1 to 10.
+
+    ### Image Description
+    I am sending the image in the api call
+
+    ### Caption
+    {caption}
+
+    ### Company Information
+    {company_information}
+
+    Please provide a detailed evaluation of the caption based on the above criteria, highlighting its strengths and suggesting any improvements if necessary.
+    """
+
+    response = client.chat.completions.create(
+        model="gpt-4-turbo",
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a pro social media marketing caption evaluator. Evaluate my caption."
+            },
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": prompt},
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{base64_image}",
+                        },
+                    },
+                ],
+            }
+        ],
+        max_tokens=1024,
+    )
+    return response.choices[0].message.content
+
+
 if uploaded_file is not None:
     image = Image.open(uploaded_file).convert('RGB')
     col1, col2, col3 = st.columns(3)
@@ -104,8 +160,11 @@ if uploaded_file is not None:
         "All that glitters is gold ✨creating the perfect canvas for this gold AND bold look..."
         "Double the gloss double the glam 💦 Are you ready to #DoubleGloss fam?..."
         """)
-
-    if st.button("Generate Social Media Post"):
+    social_post = ""
+    if st.button("Generate and Evaluate Social Media Post"):
         social_post = generate_social_media_post(
             conditional_caption, unconditional_caption, company_info, social_media_posts)
+        post_evaluation = evaluate_social_media_post(
+            image, social_post, company_info)
         st.write("Generated Social Media Post:", social_post)
+        st.write("Social Media Post Evaluation:", post_evaluation)
