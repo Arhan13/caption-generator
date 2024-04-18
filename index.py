@@ -17,9 +17,36 @@ model = BlipForConditionalGeneration.from_pretrained(
 
 client = OpenAI(api_key=OPENAPI_KEY_VALUE)
 
+st.set_page_config(layout="wide")
+st.markdown(
+    """
+    <style>
+    .main {
+        background-color: #0F1958;
+    }
+    button[title="View fullscreen"]{
+        visibility: hidden;
+    }
+    label[data-testid="stWidgetLabel"] {
+        p{
+            font-size: 24px;
+            font-weight: bold;
+            color: #FCB929;
+        }
+    }
+    div.stFileUploader > div:first-child {
+    font-size: 24px;
+    font-weight: bold;
+}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+st.image("titlepage.svg", use_column_width=True)
+st.image("secondpage.svg", use_column_width=True)
 # File upload handling
 uploaded_file = st.file_uploader(
-    "Upload an image", type=['png', 'jpg', 'jpeg'])
+    "Upload your next social media post!", type=['png', 'jpg', 'jpeg'])
 
 
 def generate_social_media_post(image_conditional_caption, image_unconditional_caption, company_info, social_media_posts):
@@ -44,7 +71,15 @@ def generate_social_media_post(image_conditional_caption, image_unconditional_ca
 
 if uploaded_file is not None:
     image = Image.open(uploaded_file).convert('RGB')
-    st.image(image, caption='Uploaded Image')
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.write(' ')
+
+    with col2:
+        st.image(image, caption='Uploaded Image', width=300)
+
+    with col3:
+        st.write(' ')
 
     # Conditional image captioning
     text = "a photograph of"
